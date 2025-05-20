@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "utility-mcp-azure-function": {
+      "type": "stdio",
+      "command": "func",
+      "args": ["start"]
+    }
+  }
+}
