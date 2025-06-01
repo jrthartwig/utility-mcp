@@ -54,6 +54,16 @@ def UtilityRatesFunction(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 
+@app.route(route="v1/context", auth_level="function", methods=["OPTIONS"])
+def mcp_context_options(req: func.HttpRequest) -> func.HttpResponse:
+    # Handle CORS preflight
+    headers = {
+        "Access-Control-Allow-Origin": "http://localhost:5173",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    }
+    return func.HttpResponse("", status_code=204, headers=headers)
+
 @app.route(route="v1/context", auth_level="function", methods=["POST"])
 def mcp_context(req: func.HttpRequest) -> func.HttpResponse:
     """
@@ -65,7 +75,8 @@ def mcp_context(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(
             json.dumps({"error": "Invalid JSON in request body."}),
             status_code=400,
-            mimetype="application/json"
+            mimetype="application/json",
+            headers={"Access-Control-Allow-Origin": "http://localhost:5173"}
         )
     # Example: expects lat/lon in context request
     lat = req_body.get("lat")
@@ -74,14 +85,16 @@ def mcp_context(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(
             json.dumps({"error": "Missing required parameters: lat and lon in request body."}),
             status_code=400,
-            mimetype="application/json"
+            mimetype="application/json",
+            headers={"Access-Control-Allow-Origin": "http://localhost:5173"}
         )
     api_key = os.environ.get("NREL_API_KEY")
     if not api_key:
         return func.HttpResponse(
             json.dumps({"error": "NREL_API_KEY environment variable not set."}),
             status_code=500,
-            mimetype="application/json"
+            mimetype="application/json",
+            headers={"Access-Control-Allow-Origin": "http://localhost:5173"}
         )
     url = f"https://developer.nrel.gov/api/utility_rates/v3.json?api_key={api_key}&lat={lat}&lon={lon}"
     try:
@@ -100,14 +113,16 @@ def mcp_context(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(
             json.dumps(mcp_response),
             status_code=200,
-            mimetype="application/json"
+            mimetype="application/json",
+            headers={"Access-Control-Allow-Origin": "http://localhost:5173"}
         )
     except requests.RequestException as e:
         logging.error(f"Error calling NREL API: {e}")
         return func.HttpResponse(
             json.dumps({"error": "Failed to fetch utility data from NREL API."}),
             status_code=502,
-            mimetype="application/json"
+            mimetype="application/json",
+            headers={"Access-Control-Allow-Origin": "http://localhost:5173"}
         )
 
 @app.route(route="v1/metadata", auth_level="function", methods=["GET"])
